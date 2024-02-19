@@ -47,7 +47,7 @@
             this.dataGridView1.RowTemplate.Height = 24;
             this.dataGridView1.Size = new System.Drawing.Size(1384, 396);
             this.dataGridView1.TabIndex = 0;
-            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
+            //this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // RefreshBtn
             // 
@@ -62,9 +62,9 @@
             // 
             // StartServiceBtn
             // 
-            this.StartServiceBtn.Location = new System.Drawing.Point(12, 12);
+            this.StartServiceBtn.Location = new System.Drawing.Point(12, 1);
             this.StartServiceBtn.Name = "StartServiceBtn";
-            this.StartServiceBtn.Size = new System.Drawing.Size(139, 23);
+            this.StartServiceBtn.Size = new System.Drawing.Size(139, 34);
             this.StartServiceBtn.TabIndex = 3;
             this.StartServiceBtn.Text = "Start";
             this.StartServiceBtn.UseVisualStyleBackColor = true;
@@ -72,9 +72,9 @@
             // 
             // StopServiceBtn
             // 
-            this.StopServiceBtn.Location = new System.Drawing.Point(157, 12);
+            this.StopServiceBtn.Location = new System.Drawing.Point(157, 1);
             this.StopServiceBtn.Name = "StopServiceBtn";
-            this.StopServiceBtn.Size = new System.Drawing.Size(123, 23);
+            this.StopServiceBtn.Size = new System.Drawing.Size(128, 34);
             this.StopServiceBtn.TabIndex = 4;
             this.StopServiceBtn.Text = "Stop";
             this.StopServiceBtn.UseVisualStyleBackColor = true;
