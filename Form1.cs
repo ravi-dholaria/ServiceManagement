@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.ServiceProcess;
@@ -129,7 +130,7 @@ namespace ServiceManagement
         #region SearchBox
         private void SearchBox_TextChanged(object sender, EventArgs e)
         {
-            SearchBox.Text = SearchBox.Text.Trim();
+            SearchBox.Text = SearchBox.Text;
             if (SearchBox.Text != "")
             {
                 dataGridView1.ClearSelection();
@@ -154,5 +155,53 @@ namespace ServiceManagement
             SearchBox_TextChanged(sender, e);
         }
         #endregion
+
+        //Method will open the file dialog to select the service file and install the service.
+        private void InstallBtn_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog fileDialog = new OpenFileDialog
+            {
+                Filter = "Executable files (*.exe)|*.exe",
+                Title = "Select the service file"
+            };
+            if (fileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string servicePath = fileDialog.FileName;
+                ServiceInstallerClass.InstallService(servicePath);
+                RefreshBtn_Click(sender, e);
+                //scroll to installed service
+                dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.Rows.Count - 2;
+                //select installed service
+                dataGridView1.Rows[dataGridView1.Rows.Count - 2].Selected = true;
+            }
+        }
+
+        //Method will open the file dialog to select the service file and uninstall the service.
+        private void UninstallBtn_Click(object sender, EventArgs e)
+        {
+            if ( dataGridView1.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a service to uninstall");
+                return;
+            }
+            int selectedIndex = dataGridView1.SelectedRows[0].Index;
+            var cellValue = dataGridView1.Rows[selectedIndex].Cells["ServiceName"].Value;
+            if (cellValue == null)
+            {
+                MessageBox.Show("Please select a service to uninstall");
+                return;
+            }
+            string serviceName = cellValue.ToString();
+            ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.DisplayName == serviceName);
+            if (service.Status == ServiceControllerStatus.Running)
+            {
+                MessageBox.Show("Please stop the service before uninstalling");
+                return;
+            }
+            //get the service path from service name
+            string servicePath = service.ServiceName;
+            ServiceInstallerClass.UninstallService(servicePath);
+            RefreshBtn_Click(sender, e);
+        }
     }
 }
