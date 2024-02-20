@@ -25,13 +25,16 @@ namespace ServiceManagement
         #region Form1 Load event
         private void Form1_Load(object sender, EventArgs e)
         {
+            
             // Set up the DataGridView
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dataGridView1.Columns.Add("SrNo", "Sr No");
             dataGridView1.Columns.Add("ServiceName", "Service Name");
+            dataGridView1.Columns.Add("Description", "Description");
             dataGridView1.Columns.Add("Status", "Status");
-            dataGridView1.Columns[0].FillWeight = 10;
+            dataGridView1.Columns.Add("StartType", "Start Type");
+            dataGridView1.Columns[0].FillWeight = 15;
 
             // Set DataGridView properties
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -43,7 +46,14 @@ namespace ServiceManagement
             //subscribe to Textchange event for searchbox
             SearchBox.TextChanged += SearchBox_TextChanged;
 
+            //call the refresh button click method 
             RefreshBtn_Click(sender, e);
+
+            //call the refresh button click method at every 5 
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer.Interval = 60000;
+            timer.Tick += new EventHandler(RefreshBtn_Click);
+            timer.Start();
         }
         #endregion
 
@@ -66,15 +76,20 @@ namespace ServiceManagement
             if (dataGridView1.SelectedRows.Count > 0)
             {
                 selectedRowIndex = dataGridView1.SelectedRows[0].Index;
-            }   
+            }
             // Clear the DataGridView
+            dataGridView1.AllowUserToAddRows = false;
             dataGridView1.Rows.Clear();
+            // Code to repopulate the DataGridView
+            dataGridView1.AllowUserToAddRows = true;
+
             ServiceController[] services = ServiceController.GetServices();
             // Add services to the DataGridView
             int i = 1;
             foreach (ServiceController service in services)
             {
-                dataGridView1.Rows.Add(i, service.DisplayName, service.Status);
+                //string description = new ServiceInfoClass().GetServiceDescription(service.ServiceName);
+                dataGridView1.Rows.Add(i, service.DisplayName,service.DisplayName, service.Status, service.StartType);
                 i++;
             }
             // Select the previously selected row
@@ -102,7 +117,7 @@ namespace ServiceManagement
                     service.WaitForStatus(ServiceControllerStatus.Running);
                     RefreshBtn_Click(sender, e); // Refresh the DataGridView after starting the service
                 }
-                
+                else RefreshBtn_Click(sender, e); // Refresh the DataGridView after starting the service
             }
         }
         #endregion
@@ -122,7 +137,8 @@ namespace ServiceManagement
                     service.Stop();
                     service.WaitForStatus(ServiceControllerStatus.Stopped);
                     RefreshBtn_Click(sender, e); // Refresh the DataGridView after stopping the service
-                }
+                } else
+                RefreshBtn_Click(sender, e); // Refresh the DataGridView after starting the service
             }
         }
         #endregion
@@ -156,7 +172,7 @@ namespace ServiceManagement
         }
         #endregion
 
-        //Method will open the file dialog to select the service file and install the service.
+        #region InstallBtn
         private void InstallBtn_Click(object sender, EventArgs e)
         {
             OpenFileDialog fileDialog = new OpenFileDialog
@@ -167,7 +183,7 @@ namespace ServiceManagement
             if (fileDialog.ShowDialog() == DialogResult.OK)
             {
                 string servicePath = fileDialog.FileName;
-                ServiceInstallerClass.InstallService(servicePath);
+                ServiceInstallerClass.InstallService($"{servicePath}");
                 RefreshBtn_Click(sender, e);
                 //scroll to installed service
                 dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.Rows.Count - 2;
@@ -175,8 +191,9 @@ namespace ServiceManagement
                 dataGridView1.Rows[dataGridView1.Rows.Count - 2].Selected = true;
             }
         }
+        #endregion
 
-        //Method will open the file dialog to select the service file and uninstall the service.
+        #region UninstallBtn
         private void UninstallBtn_Click(object sender, EventArgs e)
         {
             if ( dataGridView1.SelectedRows.Count == 0)
@@ -203,5 +220,6 @@ namespace ServiceManagement
             ServiceInstallerClass.UninstallService(servicePath);
             RefreshBtn_Click(sender, e);
         }
+        #endregion
     }
 }
