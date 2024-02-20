@@ -15,12 +15,21 @@ namespace ServiceManagement
 {
     public partial class Form1 : Form
     {
+
+        private ProgressForm progressForm;
+
         #region constructor
         public Form1()
         {
             InitializeComponent();
         }
         #endregion
+        private void showProgressForm(string msg)
+        {
+            progressForm = new ProgressForm(msg);
+            progressForm.StartPosition = FormStartPosition.CenterScreen;
+            progressForm.Show();
+        }
 
         #region Form1 Load event
         private void Form1_Load(object sender, EventArgs e)
@@ -89,7 +98,7 @@ namespace ServiceManagement
             foreach (ServiceController service in services)
             {
                 //string description = new ServiceInfoClass().GetServiceDescription(service.ServiceName);
-                dataGridView1.Rows.Add(i, service.DisplayName,service.DisplayName, service.Status, service.StartType);
+                dataGridView1.Rows.Add(i, service.ServiceName,service.DisplayName, service.Status, service.StartType);
                 i++;
             }
             // Select the previously selected row
@@ -173,7 +182,7 @@ namespace ServiceManagement
         #endregion
 
         #region InstallBtn
-        private void InstallBtn_Click(object sender, EventArgs e)
+        private async void InstallBtn_Click(object sender, EventArgs e)
         {
             OpenFileDialog fileDialog = new OpenFileDialog
             {
@@ -182,8 +191,19 @@ namespace ServiceManagement
             };
             if (fileDialog.ShowDialog() == DialogResult.OK)
             {
+                showProgressForm("Install");
                 string servicePath = fileDialog.FileName;
-                ServiceInstallerClass.InstallService($"{servicePath}");
+                await Task.Run(() => new ServiceInstallerClass().InstallService(servicePath));
+                // Close the progress form after installation is completed
+                if (progressForm != null)
+                {
+                    progressForm.Invoke(new Action(() =>
+                    {
+                        progressForm.Close();
+                        progressForm.Dispose();
+                        progressForm = null;
+                    }));
+                }
                 RefreshBtn_Click(sender, e);
                 //scroll to installed service
                 dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.Rows.Count - 2;
@@ -194,7 +214,7 @@ namespace ServiceManagement
         #endregion
 
         #region UninstallBtn
-        private void UninstallBtn_Click(object sender, EventArgs e)
+        private async void UninstallBtn_Click(object sender, EventArgs e)
         {
             if ( dataGridView1.SelectedRows.Count == 0)
             {
@@ -209,15 +229,26 @@ namespace ServiceManagement
                 return;
             }
             string serviceName = cellValue.ToString();
-            ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.DisplayName == serviceName);
+            ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == serviceName);
             if (service.Status == ServiceControllerStatus.Running)
             {
                 MessageBox.Show("Please stop the service before uninstalling");
                 return;
             }
+            showProgressForm("Uninstall");
             //get the service path from service name
             string servicePath = service.ServiceName;
-            ServiceInstallerClass.UninstallService(servicePath);
+            await Task.Run(() => new ServiceInstallerClass().UninstallService(servicePath));
+            // Close the progress form after uninstallation is completed
+            if (progressForm != null)
+            {
+                progressForm.Invoke(new Action(() =>
+                {
+                    progressForm.Close();
+                    progressForm.Dispose();
+                    progressForm = null;
+                }));
+            }
             RefreshBtn_Click(sender, e);
         }
         #endregion

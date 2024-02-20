@@ -7,60 +7,50 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.ServiceProcess;
 using System.Configuration.Install;
+using System.Threading;
+using System.IO;
 
 namespace ServiceManagement
 {
     internal class ServiceInstallerClass
     {
-        //Method to install the service from given path.
-        public static void InstallService(string servicePath, string serviceName = "MyDriveService", string serviceDisplayName = "MyDriveService", string serviceDescription = "MyDriveService", ServiceStartMode startMode = ServiceStartMode.Manual)
+        //Method to install the service from given path using installutil show popup that shows status of process and as process complete close that popup.
+        public void InstallService(string servicePath)
         {
-            try
+            ProcessStartInfo processInfo = new ProcessStartInfo
             {
-                // Create a service process description.
-                ServiceProcessInstaller processInstaller = new ServiceProcessInstaller();
-                ServiceInstaller serviceInstaller = new ServiceInstaller();
-
-                // Set the service credentials (if necessary).
-                processInstaller.Account = ServiceAccount.LocalSystem;
-
-                // Set the service properties.
-                serviceInstaller.StartType = startMode;
-                serviceInstaller.ServiceName = serviceName;
-                serviceInstaller.DisplayName = serviceDisplayName;
-                serviceInstaller.Description = serviceDescription;
-                serviceInstaller.DelayedAutoStart = true; // This can be set to true if necessary.
-
-                // Set the service source.
-                serviceInstaller.Context = new System.Configuration.Install.InstallContext();
-                serviceInstaller.Context.Parameters["assemblypath"] = servicePath;
-
-                // Install the service.
-                System.Configuration.Install.AssemblyInstaller installer = new System.Configuration.Install.AssemblyInstaller();
-                installer.UseNewContext = true;
-                installer.Installers.Add(processInstaller);
-                installer.Installers.Add(serviceInstaller);
-                installer.Path = servicePath;
-                installer.Install(new System.Collections.Hashtable());
-
-                Console.WriteLine("Service installed successfully.");
-            }
-            catch (Exception ex)
+                FileName = "cmd",
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                Verb = "runas"
+            };
+            Process process = new Process
             {
-                Console.WriteLine("Error installing service: " + ex.Message);
-            }
+                StartInfo = processInfo
+            };
+
+            process.Start();
+            // Perform the installation using installutil
+            process.StandardInput.WriteLine("cd " + Path.GetDirectoryName(servicePath));
+            process.StandardInput.WriteLine("installutil " + servicePath);
+            process.StandardInput.Close();
+            process.WaitForExit();
+            process.Close();
+            
         }
 
-        //Method to uninstall the service from selected service using.
-        public static void UninstallService(string servicePath)
+
+        //Method to uninstall the service from given path using installutil.
+        public void UninstallService(string servicePath)
         {
-            using( ServiceProcessInstaller serviceProcessInstaller = new ServiceProcessInstaller());
+            using (ServiceProcessInstaller serviceProcessInstaller = new ServiceProcessInstaller()) ;
             using (ServiceInstaller serviceInstaller = new ServiceInstaller())
             {
                 // Set the service name
                 serviceInstaller.ServiceName = servicePath;
 
-                MessageBox.Show("Uninstalling Service");
                 // Create an instance of TransactedInstaller
                 using (TransactedInstaller transactedInstaller = new TransactedInstaller())
                 {
@@ -70,7 +60,6 @@ namespace ServiceManagement
                     // Uninstall the service
                     transactedInstaller.Uninstall(null);
                 }
-                MessageBox.Show("Service Uninstalled");
             }
         }
     }
