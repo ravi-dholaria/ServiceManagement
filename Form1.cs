@@ -15,8 +15,10 @@ namespace ServiceManagement
 {
     public partial class Form1 : Form
     {
-
+        #region class variables
         private ProgressForm progressForm;
+        System.Windows.Forms.Timer timer;
+        #endregion
 
         #region constructor
         public Form1()
@@ -24,17 +26,19 @@ namespace ServiceManagement
             InitializeComponent();
         }
         #endregion
+
+        #region Progress Bar Form
         private void showProgressForm(string msg)
         {
             progressForm = new ProgressForm(msg);
             progressForm.StartPosition = FormStartPosition.CenterScreen;
             progressForm.Show();
         }
+        #endregion
 
         #region Form1 Load event
         private void Form1_Load(object sender, EventArgs e)
         {
-            
             // Set up the DataGridView
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
@@ -59,7 +63,7 @@ namespace ServiceManagement
             RefreshBtn_Click(sender, e);
 
             //call the refresh button click method at every 5 
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer = new System.Windows.Forms.Timer();
             timer.Interval = 60000;
             timer.Tick += new EventHandler(RefreshBtn_Click);
             timer.Start();
@@ -81,6 +85,7 @@ namespace ServiceManagement
         private void RefreshBtn_Click(object sender, EventArgs e)
         {
             // Refresh the DataGridView
+   
             int selectedRowIndex = -1;
             if (dataGridView1.SelectedRows.Count > 0)
             {
@@ -97,10 +102,11 @@ namespace ServiceManagement
             int i = 1;
             foreach (ServiceController service in services)
             {
-                //string description = new ServiceInfoClass().GetServiceDescription(service.ServiceName);
-                dataGridView1.Rows.Add(i, service.ServiceName,service.DisplayName, service.Status, service.StartType);
+                string description = new ServiceInfoClass().GetServiceDescription(service.ServiceName);
+                dataGridView1.Rows.Add(i, service.DisplayName,description, service.Status, service.StartType);
                 i++;
             }
+            dataGridView1.AllowUserToAddRows = false;
             // Select the previously selected row
             if (selectedRowIndex!=-1 && dataGridView1.Rows.Count > selectedRowIndex)
             {
@@ -204,11 +210,17 @@ namespace ServiceManagement
                         progressForm = null;
                     }));
                 }
-                RefreshBtn_Click(sender, e);
-                //scroll to installed service
-                dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.Rows.Count - 2;
-                //select installed service
-                dataGridView1.Rows[dataGridView1.Rows.Count - 2].Selected = true;
+                string serviceName = ServiceController.GetServices().Last().ServiceName;
+                Form form = new ServiceDetailForm(serviceName);
+                using (ServiceDetailForm serviceDetailForm = new ServiceDetailForm(serviceName))
+                {
+                    if (serviceDetailForm.ShowDialog() == DialogResult.OK)
+                    {
+                        RefreshBtn_Click(sender, e);
+                        dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.Rows.Count - 1;
+                        dataGridView1.Rows[dataGridView1.Rows.Count - 1].Selected = true;
+                    }
+                }
             }
         }
         #endregion
@@ -229,12 +241,13 @@ namespace ServiceManagement
                 return;
             }
             string serviceName = cellValue.ToString();
-            ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == serviceName);
+            ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.DisplayName == serviceName);
             if (service.Status == ServiceControllerStatus.Running)
             {
                 MessageBox.Show("Please stop the service before uninstalling");
                 return;
             }
+            timer.Stop();
             showProgressForm("Uninstall");
             //get the service path from service name
             string servicePath = service.ServiceName;
@@ -250,6 +263,7 @@ namespace ServiceManagement
                 }));
             }
             RefreshBtn_Click(sender, e);
+            timer.Start();
         }
         #endregion
     }

@@ -9,6 +9,8 @@ using System.ServiceProcess;
 using System.Configuration.Install;
 using System.Threading;
 using System.IO;
+using Microsoft.Win32;
+using System.Collections;
 
 namespace ServiceManagement
 {
@@ -38,10 +40,8 @@ namespace ServiceManagement
             process.StandardInput.Close();
             process.WaitForExit();
             process.Close();
-            
         }
-
-
+      
         //Method to uninstall the service from given path using installutil.
         public void UninstallService(string servicePath)
         {
