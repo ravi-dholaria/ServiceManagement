@@ -122,6 +122,7 @@ namespace ServiceManagement
                 if (fileDialog.ShowDialog() == DialogResult.OK)
                 {
                     servicePath = fileDialog.FileName;
+                    SerivceFileBox.Text = servicePath;
                 }
                 GetServiceName(servicePath);
             }));

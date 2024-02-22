@@ -90,6 +90,7 @@ namespace ServiceManagement
             if (dataGridView1.SelectedRows.Count > 0)
             {
                 selectedRowIndex = dataGridView1.SelectedRows[0].Index;
+                dataGridView1.Rows[selectedRowIndex].Selected = false;
             }
 
             // Clear the DataGridView
@@ -116,6 +117,7 @@ namespace ServiceManagement
             // Select the previously selected row
             if (selectedRowIndex!=-1 && dataGridView1.Rows.Count > selectedRowIndex)
             {
+                dataGridView1.Rows[0].Selected = false;
                 dataGridView1.Rows[selectedRowIndex].Selected = true;
                 dataGridView1.FirstDisplayedScrollingRowIndex = selectedRowIndex;
             }
@@ -201,9 +203,17 @@ namespace ServiceManagement
                 if (form.ShowDialog() == DialogResult.OK)
                 {
                     string servicePath = form.servicePath;
+                    ServiceDetailsClass serviceDetails = new ServiceDetailsClass();
+                    serviceDetails.ServiceDisplayName = form.DispName;
+                    serviceDetails.ServiceDescription = form.ServiceDescription;
+                    serviceDetails.ServiceStartType = form.ServiceStartType;
+                    serviceDetails.ServiceName = serviceDetails.ServiceDisplayName.Replace(" ","");
+                    ServiceDalClass serviceDal = new ServiceDalClass();
+                    serviceDal.AddService(serviceDetails);
                     showProgressForm("Install");
-                    await Task.Run(() => new ServiceInstallerClass().InstallService(servicePath));
+                    await Task.Run(() => new ServiceInstallerClass().InstallService(servicePath,serviceDetails.ServiceName));
                     RefreshBtn_Click(sender, e);
+                    dataGridView1.Rows[0].Selected = false;
                     dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.Rows.Count - 1;
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Selected = true;
                 }
@@ -238,6 +248,8 @@ namespace ServiceManagement
                 return;
             }
             string serviceName = cellValue.ToString();
+            ServiceDalClass serviceDalClass = new ServiceDalClass();
+            serviceDalClass.RemoveService(serviceName);
             ServiceController service = ServiceController.GetServices().FirstOrDefault(s => s.DisplayName == serviceName);
             if (service.Status == ServiceControllerStatus.Running)
             {

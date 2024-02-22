@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ServiceManagement.DAL
 {
@@ -36,16 +37,37 @@ namespace ServiceManagement.DAL
         }
 
         #region Insert Service Details
-        public void InsertServiceDetails(ServiceDetailsClass serviceDetails)
+        public void AddService(ServiceDetailsClass serviceDetails)
+        {
+            try
+            {
+
+                using (SqlConnection con = new SqlConnection(connectionstring))
+                {
+                    con.Open();
+                    SqlCommand cmd = new SqlCommand("insert into ServiceDetails(ServiceName,ServiceDescription,ServiceStartType,ServiceDisplayName) values(@ServiceName,@ServiceDescription,@ServiceStartType,@ServiceDisplayName)", con);
+                    cmd.Parameters.AddWithValue("@ServiceName", serviceDetails.ServiceName);
+                    cmd.Parameters.AddWithValue("@ServiceDescription", serviceDetails.ServiceDescription);
+                    cmd.Parameters.AddWithValue("@ServiceStartType", serviceDetails.ServiceStartType);
+                    cmd.Parameters.AddWithValue("@ServiceDisplayName", serviceDetails.ServiceDisplayName);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);    
+            }
+        }
+        #endregion
+
+        #region remove Service Details
+        public void RemoveService(string ServiceDisplayName)
         {
             using (SqlConnection con = new SqlConnection(connectionstring))
             {
                 con.Open();
-                SqlCommand cmd = new SqlCommand("insert into ServiceDetails(ServiceName,ServiceDescription,ServiceStartType,ServiceDisplayName) values(@ServiceName,@ServiceDescription,@ServiceStartType,@ServiceDisplayName)", con);
-                cmd.Parameters.AddWithValue("@ServiceName", serviceDetails.ServiceName);
-                cmd.Parameters.AddWithValue("@ServiceDescription", serviceDetails.ServiceDescription);
-                cmd.Parameters.AddWithValue("@ServiceStartType", serviceDetails.ServiceStartType);
-                cmd.Parameters.AddWithValue("@ServiceDisplayName", serviceDetails.ServiceDisplayName);
+                SqlCommand cmd = new SqlCommand("delete from ServiceDetails where ServiceDisplayName = @ServiceDisplayName", con);
+                cmd.Parameters.AddWithValue("@ServiceDisplayName",ServiceDisplayName);
                 cmd.ExecuteNonQuery();
             }
         }

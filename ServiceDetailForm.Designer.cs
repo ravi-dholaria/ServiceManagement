@@ -37,6 +37,7 @@
             this.SubmitBtn = new System.Windows.Forms.Button();
             this.ServiceFileBtn = new System.Windows.Forms.Button();
             this.SelectFileLabel = new System.Windows.Forms.Label();
+            this.SerivceFileBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // DisplayName
@@ -100,9 +101,9 @@
             // 
             // ServiceFileBtn
             // 
-            this.ServiceFileBtn.Location = new System.Drawing.Point(204, 12);
+            this.ServiceFileBtn.Location = new System.Drawing.Point(373, 12);
             this.ServiceFileBtn.Name = "ServiceFileBtn";
-            this.ServiceFileBtn.Size = new System.Drawing.Size(163, 30);
+            this.ServiceFileBtn.Size = new System.Drawing.Size(86, 30);
             this.ServiceFileBtn.TabIndex = 7;
             this.ServiceFileBtn.Text = "Open";
             this.ServiceFileBtn.UseVisualStyleBackColor = true;
@@ -117,11 +118,19 @@
             this.SelectFileLabel.TabIndex = 8;
             this.SelectFileLabel.Text = "Select Service File :";
             // 
+            // SerivceFileBox
+            // 
+            this.SerivceFileBox.Location = new System.Drawing.Point(204, 16);
+            this.SerivceFileBox.Name = "SerivceFileBox";
+            this.SerivceFileBox.Size = new System.Drawing.Size(163, 22);
+            this.SerivceFileBox.TabIndex = 9;
+            // 
             // ServiceDetailForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(492, 307);
+            this.ClientSize = new System.Drawing.Size(503, 307);
+            this.Controls.Add(this.SerivceFileBox);
             this.Controls.Add(this.SelectFileLabel);
             this.Controls.Add(this.ServiceFileBtn);
             this.Controls.Add(this.SubmitBtn);
@@ -149,5 +158,6 @@
         private System.Windows.Forms.Button SubmitBtn;
         private System.Windows.Forms.Button ServiceFileBtn;
         private System.Windows.Forms.Label SelectFileLabel;
+        private System.Windows.Forms.TextBox SerivceFileBox;
     }
 }

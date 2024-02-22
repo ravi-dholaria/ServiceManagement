@@ -17,7 +17,7 @@ namespace ServiceManagement
     internal class ServiceInstallerClass
     {
         //Method to install the service from given path using installutil show popup that shows status of process and as process complete close that popup.
-        public void InstallService(string servicePath)
+        public void InstallService(string servicePath,string ServiceName)
         {
             ProcessStartInfo processInfo = new ProcessStartInfo
             {
@@ -35,8 +35,7 @@ namespace ServiceManagement
 
             process.Start();
             // Perform the installation using installutil
-            process.StandardInput.WriteLine("cd " + Path.GetDirectoryName(servicePath));
-            process.StandardInput.WriteLine("installutil " + servicePath);
+            process.StandardInput.WriteLine($"sc create {ServiceName} binpath=\"{servicePath}\"");
             process.StandardInput.Close();
             process.WaitForExit();
             process.Close();
