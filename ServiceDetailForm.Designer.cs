@@ -35,6 +35,8 @@
             this.StartTypeComboBox = new System.Windows.Forms.ComboBox();
             this.StartType = new System.Windows.Forms.Label();
             this.SubmitBtn = new System.Windows.Forms.Button();
+            this.ServiceFileBtn = new System.Windows.Forms.Button();
+            this.SelectFileLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // DisplayName
@@ -96,11 +98,32 @@
             this.SubmitBtn.UseVisualStyleBackColor = true;
             this.SubmitBtn.Click += new System.EventHandler(this.SubmitBtn_Click);
             // 
+            // ServiceFileBtn
+            // 
+            this.ServiceFileBtn.Location = new System.Drawing.Point(204, 12);
+            this.ServiceFileBtn.Name = "ServiceFileBtn";
+            this.ServiceFileBtn.Size = new System.Drawing.Size(163, 30);
+            this.ServiceFileBtn.TabIndex = 7;
+            this.ServiceFileBtn.Text = "Open";
+            this.ServiceFileBtn.UseVisualStyleBackColor = true;
+            this.ServiceFileBtn.Click += new System.EventHandler(this.ServiceFileBtn_Click);
+            // 
+            // SelectFileLabel
+            // 
+            this.SelectFileLabel.AutoSize = true;
+            this.SelectFileLabel.Location = new System.Drawing.Point(73, 19);
+            this.SelectFileLabel.Name = "SelectFileLabel";
+            this.SelectFileLabel.Size = new System.Drawing.Size(125, 16);
+            this.SelectFileLabel.TabIndex = 8;
+            this.SelectFileLabel.Text = "Select Service File :";
+            // 
             // ServiceDetailForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(492, 307);
+            this.Controls.Add(this.SelectFileLabel);
+            this.Controls.Add(this.ServiceFileBtn);
             this.Controls.Add(this.SubmitBtn);
             this.Controls.Add(this.StartType);
             this.Controls.Add(this.StartTypeComboBox);
@@ -124,5 +147,7 @@
         private System.Windows.Forms.ComboBox StartTypeComboBox;
         private System.Windows.Forms.Label StartType;
         private System.Windows.Forms.Button SubmitBtn;
+        private System.Windows.Forms.Button ServiceFileBtn;
+        private System.Windows.Forms.Label SelectFileLabel;
     }
 }

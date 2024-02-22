@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ServiceManagement.DAL;
+using ServiceManagement.Model;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -84,29 +86,33 @@ namespace ServiceManagement
         #region RefresBtn
         private void RefreshBtn_Click(object sender, EventArgs e)
         {
-            // Refresh the DataGridView
-   
             int selectedRowIndex = -1;
             if (dataGridView1.SelectedRows.Count > 0)
             {
                 selectedRowIndex = dataGridView1.SelectedRows[0].Index;
             }
+
             // Clear the DataGridView
             dataGridView1.AllowUserToAddRows = false;
             dataGridView1.Rows.Clear();
+
             // Code to repopulate the DataGridView
             dataGridView1.AllowUserToAddRows = true;
-
-            ServiceController[] services = ServiceController.GetServices();
+            ServiceDalClass serviceDal = new ServiceDalClass();
+            List<ServiceDetailsClass> services = serviceDal.GetAllServiceDetails();
+            
             // Add services to the DataGridView
             int i = 1;
-            foreach (ServiceController service in services)
+            foreach (var service in services)
             {
-                string description = new ServiceInfoClass().GetServiceDescription(service.ServiceName);
-                dataGridView1.Rows.Add(i, service.DisplayName,description, service.Status, service.StartType);
+                //string description = new ServiceInfoClass().GetServiceDescription(service.ServiceName);
+                ServiceController sc = new ServiceController(service.ServiceName);
+                dataGridView1.Rows.Add(i, service.ServiceDisplayName,service.ServiceDescription, sc.Status, sc.StartType);
                 i++;
             }
             dataGridView1.AllowUserToAddRows = false;
+
+
             // Select the previously selected row
             if (selectedRowIndex!=-1 && dataGridView1.Rows.Count > selectedRowIndex)
             {
@@ -189,38 +195,29 @@ namespace ServiceManagement
 
         #region InstallBtn
         private async void InstallBtn_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog fileDialog = new OpenFileDialog
+        {            
+            using (ServiceDetailForm form = new ServiceDetailForm())
             {
-                Filter = "Executable files (*.exe)|*.exe",
-                Title = "Select the service file"
-            };
-            if (fileDialog.ShowDialog() == DialogResult.OK)
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    string servicePath = form.servicePath;
+                    showProgressForm("Install");
+                    await Task.Run(() => new ServiceInstallerClass().InstallService(servicePath));
+                    RefreshBtn_Click(sender, e);
+                    dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.Rows.Count - 1;
+                    dataGridView1.Rows[dataGridView1.Rows.Count - 1].Selected = true;
+                }
+                form.changeServiceProperties();
+            }
+            // Close the progress form after installation is completed
+            if (progressForm != null)
             {
-                showProgressForm("Install");
-                string servicePath = fileDialog.FileName;
-                await Task.Run(() => new ServiceInstallerClass().InstallService(servicePath));
-                // Close the progress form after installation is completed
-                if (progressForm != null)
+                progressForm.Invoke(new Action(() =>
                 {
-                    progressForm.Invoke(new Action(() =>
-                    {
-                        progressForm.Close();
-                        progressForm.Dispose();
-                        progressForm = null;
-                    }));
-                }
-                string serviceName = ServiceController.GetServices().Last().ServiceName;
-                Form form = new ServiceDetailForm(serviceName);
-                using (ServiceDetailForm serviceDetailForm = new ServiceDetailForm(serviceName))
-                {
-                    if (serviceDetailForm.ShowDialog() == DialogResult.OK)
-                    {
-                        RefreshBtn_Click(sender, e);
-                        dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.Rows.Count - 1;
-                        dataGridView1.Rows[dataGridView1.Rows.Count - 1].Selected = true;
-                    }
-                }
+                    progressForm.Close();
+                    progressForm.Dispose();
+                    progressForm = null;
+                }));
             }
         }
         #endregion

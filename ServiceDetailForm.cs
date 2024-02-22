@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,39 +18,50 @@ namespace ServiceManagement
         public string DispName;
         public string ServiceDescription;
         public string ServiceStartType;
-        public ServiceDetailForm(string serviceName)
+        public string servicePath;
+
+        public ServiceDetailForm()
         {
-            this.serviceName = serviceName;
             InitializeComponent();
             StartTypeComboBox.Items.Add("auto");
             StartTypeComboBox.Items.Add("Manual");
             StartTypeComboBox.Items.Add("Disabled");
             StartTypeComboBox.Items.Add("Delayed-auto");
+            
         }
 
         private void SubmitBtn_Click(object sender, EventArgs e)
         {
-            if (DisplayNametextBox.Text != string.Empty)
+            //try catch block to handle exception
+            try
             {
-                DispName = DisplayNametextBox.Text;
-                ServiceDescription = DescriptiontextBox.Text;
-                ServiceStartType = StartTypeComboBox.Text;
-                changeServiceProperties(serviceName, DispName, ServiceDescription, ServiceStartType);
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                if (DisplayNametextBox.Text != string.Empty && serviceName != string.Empty)
+                {
+                    DispName = DisplayNametextBox.Text;
+                    ServiceDescription = DescriptiontextBox.Text;
+                    ServiceStartType = StartTypeComboBox.Text;
+                    this.DialogResult = DialogResult.OK;
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show("Service Name cannot be empty");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Service Name cannot be empty");
+                MessageBox.Show(ex.Message);
             }
         }
        
-        public void changeServiceProperties(string serviceName, string newDisplayName = "Service", string serviceDescription = "", string startMode = "demand")
+        public void changeServiceProperties()
         {
-
-            ChangeServiceDisplayName(serviceName, newDisplayName);
-            ChangeServiceDescription(serviceName, serviceDescription);
-            ChangeServiceStartupType(serviceName, startMode.ToString());
+            if ((serviceName != null))
+            {
+                ChangeServiceDisplayName(serviceName, DispName);
+                ChangeServiceDescription(serviceName, ServiceDescription);
+                ChangeServiceStartupType(serviceName, ServiceStartType);
+            }else throw new Exception("Service Name not found");
         }
 
         public void ChangeServiceDisplayName(string serviceName, string newDisplayName)
@@ -94,6 +106,42 @@ namespace ServiceManagement
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+        }
+
+        private void ServiceFileBtn_Click(object sender, EventArgs e)
+        {
+            // Execute the code on the main UI thread
+            this.Invoke(new Action(() =>
+            {
+                OpenFileDialog fileDialog = new OpenFileDialog
+                {
+                    Filter = "Executable files (*.exe)|*.exe",
+                    Title = "Select the service file"
+                };
+                if (fileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    servicePath = fileDialog.FileName;
+                }
+                GetServiceName(servicePath);
+            }));
+        }
+        private void GetServiceName(string ServicePath)
+        {
+            // Load the assembly from the provided path
+            Assembly assembly = Assembly.LoadFrom($"{ServicePath}");
+
+            // Get the AssemblyTitle attribute
+            object[] attributes = assembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
+
+            if (attributes.Length > 0)
+            {
+                serviceName = ((AssemblyTitleAttribute)attributes[0]).Title;
+                Console.WriteLine("Service Name: " + serviceName);
+            }
+            else
+            {
+                Console.WriteLine("Service name not found.");
             }
         }
     }
