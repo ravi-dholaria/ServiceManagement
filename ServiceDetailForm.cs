@@ -40,6 +40,7 @@ namespace ServiceManagement
                     DispName = DisplayNametextBox.Text;
                     ServiceDescription = DescriptiontextBox.Text;
                     ServiceStartType = StartTypeComboBox.Text;
+                    serviceName = DispName.Replace(" ", "");
                     this.DialogResult = DialogResult.OK;
                     this.Close();
                 }
@@ -124,26 +125,8 @@ namespace ServiceManagement
                     servicePath = fileDialog.FileName;
                     SerivceFileBox.Text = servicePath;
                 }
-                GetServiceName(servicePath);
+                //GetServiceName(servicePath);
             }));
-        }
-        private void GetServiceName(string ServicePath)
-        {
-            // Load the assembly from the provided path
-            Assembly assembly = Assembly.LoadFrom($"{ServicePath}");
-
-            // Get the AssemblyTitle attribute
-            object[] attributes = assembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
-
-            if (attributes.Length > 0)
-            {
-                serviceName = ((AssemblyTitleAttribute)attributes[0]).Title;
-                Console.WriteLine("Service Name: " + serviceName);
-            }
-            else
-            {
-                Console.WriteLine("Service name not found.");
-            }
         }
     }
 }
